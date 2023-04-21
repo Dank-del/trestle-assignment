@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline'
 import {useForm} from "react-hook-form";
 import {addDoc, collection, getDocs} from "firebase/firestore";
-import TaskList, {IItem} from "./components/TaskList";
+import NoteList, {IItem} from "./components/NoteList";
 
 
 type TaskInput = {
@@ -22,7 +22,7 @@ type TaskInput = {
 const features = [
     {
         name: 'Quick Updates',
-        description: 'Tasks update immediately in real time',
+        description: 'Notes update immediately in real time',
         icon: CloudArrowUpIcon,
     },
     {
@@ -36,27 +36,27 @@ function App() {
     const [user] = useAuthState(auth);
     const isOpen = useSelector((state: RootState) => state.navModal.open);
     const dispatch = useDispatch();
-    const taskInputForm = useForm<TaskInput>();
-    const [tasks, setTasks] = useState<IItem[] | null>(null);
+    const noteInputForm = useForm<TaskInput>();
+    const [notes, setNotes] = useState<IItem[] | null>(null);
 
-    const handleSubmit = taskInputForm.handleSubmit(async data => {
-        const tasksCollection = collection(db, "users", user!.uid, "tasks");
+    const handleSubmit = noteInputForm.handleSubmit(async data => {
+        const tasksCollection = collection(db, "users", user!.uid, "notes");
         try {
             const docRef = await addDoc(tasksCollection, data);
-            console.log("Task added with ID: ", docRef.id);
-            alert(`Task added with ID: ${docRef.id}`);
+            console.log("Note added with ID: ", docRef.id);
+            alert(`Note added with ID: ${docRef.id}`);
         } catch (error) {
-            console.error("Error adding Task: ", error);
-            alert(`Error adding Task: ${error}`);
+            console.error("Error adding Note: ", error);
+            alert(`Error adding Note: ${error}`);
         }
         handleChange();
-        taskInputForm.reset();
+        noteInputForm.reset();
         window.location.reload();
     })
 
-    const getTasks = async () => {
-        const tasksCollection = collection(db, "users", user!.uid, "tasks");
-        const data = await getDocs(tasksCollection)
+    const getNotes = async () => {
+        const notesCollection = collection(db, "users", user!.uid, "notes");
+        const data = await getDocs(notesCollection)
         const itemList: IItem[] = []
         data.docs.map((d) => {
             console.log(d.id);
@@ -67,11 +67,11 @@ function App() {
         return itemList;
     }
 
-    console.log(tasks);
+    console.log(notes);
 
     useEffect(() => {
         if (user) {
-            getTasks().then((data) => setTasks(data))
+            getNotes().then((data) => setNotes(data))
         }
     }, [user])
 
@@ -83,9 +83,9 @@ function App() {
         return <div className="bg-white py-24 sm:py-32">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="mx-auto max-w-2xl lg:text-center">
-                    <h2 className="text-base font-semibold leading-7 text-indigo-600">Track Your Tasks</h2>
+                    <h2 className="text-base font-semibold leading-7 text-indigo-600">Save your notes</h2>
                     <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                        Everything you need to track your tasks more efficiently
+                        Everything you need to save your notes more efficiently
                     </p>
                 </div>
                 <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
@@ -141,18 +141,18 @@ function App() {
                                         <div className="mt-1 text-center sm:mt-5">
                                             <Dialog.Title as="h3"
                                                           className="text-3xl mb-4 font-medium leading-6 text-gray-900">
-                                                Create new task
+                                                Create new Note
                                             </Dialog.Title>
                                             <form onSubmit={handleSubmit} className="space-y-6">
                                                 <div>
                                                     <label htmlFor="title"
                                                            className="block text-sm font-medium text-gray-700">
-                                                        Task Title
+                                                        Note Title
                                                     </label>
                                                     <div className="mt-1">
                                                         <input
-                                                            {...taskInputForm.register("title")}
-                                                            title="Task Title"
+                                                            {...noteInputForm.register("title")}
+                                                            title="Note Title"
                                                             name="title"
                                                             id="title"
                                                             type="text"
@@ -168,7 +168,7 @@ function App() {
                                                     </label>
                                                     <div className="mt-1">
                                                         <input
-                                                            {...taskInputForm.register("description")}
+                                                            {...noteInputForm.register("description")}
                                                             id="description"
                                                             name="description"
                                                             type="text"
@@ -195,7 +195,7 @@ function App() {
                 </Dialog>
             </Transition.Root>
             <div className="mt-2 mb-3">
-                {tasks && <TaskList items={tasks} userId={user.uid}/>}
+                {notes && <NoteList items={notes} userId={user.uid}/>}
             </div>
         </div>
     )
